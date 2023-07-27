@@ -38,11 +38,11 @@ public class App
             return;
         }
 
-        IDictionary<string, IDictionary<string, float?>> audioFeatures2;
+        IDictionary<string, IDictionary<string, float?>> audioFeatures;
         
         try
         {
-            audioFeatures2 = await _csvManager.GetPersonalAudioFeaturesFromCsvAsync(_columns, csvPath);
+            audioFeatures = await _csvManager.GetPersonalAudioFeaturesFromCsvAsync(_columns, csvPath);
         }
         catch (Exception ex)
         {
@@ -51,12 +51,12 @@ public class App
         }
 
         Console.WriteLine();
-        DisplayCsv(audioFeatures2);
+        DisplayCsv(audioFeatures);
         Console.WriteLine();
 
-        var column = SelectColumn(audioFeatures2.First().Value.Keys.ToArray());
+        var column = SelectColumn(audioFeatures.First().Value.Keys.ToArray());
 
-        var selectedFeatures = SelectFeatures(column, audioFeatures2);
+        var selectedFeatures = SelectFeatures(column, audioFeatures);
         var useMinMax = UseMinMax();
 
         var seedTracks = GetSeeds("track", TrackUrl);
