@@ -39,9 +39,9 @@ public class SpotifyManager : ISpotifyManager
             request.SeedTracks.Add(seedTrack);
         }
         
-        foreach (var seedTrack in seedArtists)
+        foreach (var seedArtist in seedArtists)
         {
-            request.SeedArtists.Add(seedTrack);
+            request.SeedArtists.Add(seedArtist);
         }
 
         request.Limit = spotifySettings.Limit;

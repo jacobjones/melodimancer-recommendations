@@ -30,7 +30,7 @@ public class CsvManager : ICsvManager
 
     public async Task<IDictionary<string, IDictionary<string, float?>>> GetPersonalAudioFeaturesFromCsvAsync(string[] columns, string csvPath)
     {
-        const string variableColumnName = "Variable";
+        const string componentsColumnName = "Components";
         
         using var reader = new StreamReader(csvPath);
         using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
@@ -39,9 +39,9 @@ public class CsvManager : ICsvManager
 
         var headerRecord = csv.HeaderRecord;
 
-        if (headerRecord == null || !headerRecord.Contains(variableColumnName))
+        if (headerRecord == null || !headerRecord.Contains(componentsColumnName))
         {
-            throw new Exception($"No column found with name '${variableColumnName}'");
+            throw new Exception($"No column found with name '{componentsColumnName}'");
         }
 
         var importColumns = headerRecord.Where(columns.Contains).ToList();
@@ -55,7 +55,7 @@ public class CsvManager : ICsvManager
 
         while (await csv.ReadAsync())
         {
-            var variable = csv.GetField<string>(variableColumnName);
+            var variable = csv.GetField<string>(componentsColumnName);
 
             IDictionary<string, float?> values = importColumns.ToDictionary(x => x, x => csv.GetField<float?>(x));
 

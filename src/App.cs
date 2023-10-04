@@ -20,7 +20,7 @@ public class App
     private const string ArtistUrl = "https://open.spotify.com/artist/";
     
     // All the columns which we care about importing
-    private readonly string[] _columns = { "Q1", "Q3", "V2", "V3", "V4" };
+    private readonly string[] _columns = { "Q1", "Q3", "V1", "V2", "V3", "V4" };
     
     public App(IConfiguration configuration, ICsvManager csvManager, ISpotifyManager spotifyManager)
     {
@@ -71,12 +71,28 @@ public class App
         var request = _spotifyManager.GetRecommendationsRequest(selectedFeatures, seedTracks, seedArtists, useMinMax, MinMaxPercentage);
 
         var recommendations = await client.Browse.GetRecommendations(request);
+
+        if (!recommendations.Tracks.Any())
+        {
+            Console.WriteLine("No tracks returned");
+
+            foreach (var min in request.Min)
+            {
+                Console.WriteLine($"{min.Key} (Min): {min.Value}");
+            }
+            
+            foreach (var max in request.Max)
+            {
+                Console.WriteLine($"{max.Key} (Max): {max.Value}");
+            }
+            
+            return;
+        }
         
         var trackFeatures =
             await client.Tracks.GetSeveralAudioFeatures(
                 new TracksAudioFeaturesRequest(recommendations.Tracks.Select(x => x.Id).ToList()));
-
-
+        
         var outputTracks = recommendations.Tracks.Select(t =>
             new OutputTrack(t, trackFeatures.AudioFeatures.SingleOrDefault(f => f.Id == t.Id))).ToList();
 
@@ -122,7 +138,12 @@ public class App
         if (column.StartsWith('V'))
         {
             return audioFeatures.Where(x => x.Value[column].HasValue)
-                .ToDictionary(x => x.Key, x => x.Value[column]!.Value);
+                .Select(x => x.Value[column] > 0 ? new Tuple<string, float>(x.Key, x.Value["Q3"]!.Value) : new Tuple<string, float>(x.Key,  x.Value["Q1"]!.Value))
+                .ToDictionary(x => x.Item1, x => x.Item2);
+
+            // This returns
+            //return audioFeatures.Where(x => x.Value[column].HasValue)
+            //    .ToDictionary(x => x.Key, x => x.Value[column]!.Value);
         }
         
         var checkbox = new Checkbox("Select the audio features.", true, true,
